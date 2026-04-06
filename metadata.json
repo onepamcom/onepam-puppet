@@ -1,0 +1,23 @@
+{
+  "name": "onepam-onepam",
+  "version": "1.0.0",
+  "author": "OnePAM",
+  "summary": "Install and configure the OnePAM Zero Trust PAM agent",
+  "license": "Apache-2.0",
+  "source": "https://github.com/onepamcom/onepam-puppet",
+  "project_page": "https://onepam.com",
+  "issues_url": "https://github.com/onepamcom/onepam-puppet/issues",
+  "tags": ["pam", "security", "zerotrust", "agent", "monitoring", "ssh", "rdp"],
+  "operatingsystem_support": [
+    { "operatingsystem": "Ubuntu", "operatingsystemrelease": ["20.04", "22.04", "24.04"] },
+    { "operatingsystem": "Debian", "operatingsystemrelease": ["11", "12"] },
+    { "operatingsystem": "CentOS", "operatingsystemrelease": ["8", "9"] },
+    { "operatingsystem": "RedHat", "operatingsystemrelease": ["8", "9"] },
+    { "operatingsystem": "Rocky", "operatingsystemrelease": ["8", "9"] },
+    { "operatingsystem": "AlmaLinux", "operatingsystemrelease": ["8", "9"] }
+  ],
+  "requirements": [
+    { "name": "puppet", "version_requirement": ">= 6.0.0 < 9.0.0" }
+  ],
+  "dependencies": []
+}

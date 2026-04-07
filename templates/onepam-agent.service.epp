@@ -11,12 +11,12 @@ Type=notify
 User=root
 Group=root
 EnvironmentFile=-<%= $install_dir %>/etc/agent.env
-ExecStart=<%= $install_dir %>/bin/onepam-agent \
+ExecStart=/bin/bash -c '<%= $install_dir %>/bin/onepam-agent \
     --server=${AGENT_API_URL} \
     --tenant-id=${AGENT_TENANT_ID} \
-    --agent-id=${AGENT_ID} \
+    --agent-id=$(cat <%= $install_dir %>/etc/agent-id) \
     --data-dir=<%= $install_dir %>/data \
-    --log-level=${AGENT_LOG_LEVEL}
+    --log-level=${AGENT_LOG_LEVEL}'
 Restart=always
 RestartSec=10
 WatchdogSec=120

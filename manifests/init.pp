@@ -14,19 +14,33 @@ class onepam (
   String              $group_uuid    = '',
   String              $agent_version = 'latest',
   Enum['debug','info','warn','error'] $log_level = 'info',
-  String              $release_url   = 'https://updates.onepam.com',
-  String              $install_dir   = '/opt/onepam',
+  Stdlib::HTTPUrl     $release_url   = 'https://updates.onepam.com',
+  Stdlib::Absolutepath $install_dir  = '/opt/onepam',
   Enum['present','absent'] $ensure   = 'present',
 ) {
+  if $facts['kernel'] != 'Linux' {
+    fail('The onepam module only supports Linux')
+  }
+
   if $ensure == 'present' and $tenant_id == '' {
     fail('onepam::tenant_id is required')
   }
 
-  contain onepam::install
-  contain onepam::config
-  contain onepam::service
+  if $ensure == 'present' {
+    contain onepam::install
+    contain onepam::config
+    contain onepam::service
 
-  Class['onepam::install']
-  -> Class['onepam::config']
-  ~> Class['onepam::service']
+    Class['onepam::install']
+    -> Class['onepam::config']
+    ~> Class['onepam::service']
+  } else {
+    contain onepam::service
+    contain onepam::config
+    contain onepam::install
+
+    Class['onepam::service']
+    -> Class['onepam::config']
+    -> Class['onepam::install']
+  }
 }

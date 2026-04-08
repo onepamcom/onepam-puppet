@@ -1,0 +1,11 @@
+pkg/
+spec/fixtures/
+Gemfile.lock
+.bundle/
+vendor/
+.vagrant/
+*.swp
+.idea/
+.vscode/
+coverage/
+log/

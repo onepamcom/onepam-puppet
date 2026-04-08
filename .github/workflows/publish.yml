@@ -1,0 +1,97 @@
+name: Publish to Puppet Forge
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  validate:
+    name: Pre-publish Validation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.2'
+          bundler-cache: true
+
+      - name: Validate module
+        run: |
+          bundle exec rake validate
+          bundle exec rake lint
+
+      - name: Run unit tests
+        run: bundle exec rake spec
+
+  publish:
+    name: Publish to Forge
+    needs: validate
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.2'
+          bundler-cache: true
+
+      - name: Validate tag matches metadata version
+        run: |
+          TAG_VERSION="${GITHUB_REF_NAME#v}"
+          META_VERSION=$(ruby -e "require 'json'; puts JSON.parse(File.read('metadata.json'))['version']")
+          if [ "$TAG_VERSION" != "$META_VERSION" ]; then
+            echo "::error::Tag version ($TAG_VERSION) does not match metadata.json version ($META_VERSION). Update metadata.json first."
+            exit 1
+          fi
+          echo "Version $TAG_VERSION confirmed."
+
+      - name: Build module package
+        run: |
+          gem install puppet-blacksmith
+          bundle exec rake module:build
+          echo "Built package:"
+          ls -lh pkg/*.tar.gz
+
+      - name: Publish to Puppet Forge
+        env:
+          FORGE_API_KEY: ${{ secrets.FORGE_API_KEY }}
+        run: |
+          if [ -z "$FORGE_API_KEY" ]; then
+            echo "::error::FORGE_API_KEY secret is not set."
+            exit 1
+          fi
+          TARBALL=$(ls pkg/*.tar.gz | head -1)
+          echo "Publishing $TARBALL to Puppet Forge..."
+          curl -fsSL \
+            --header "Authorization: Bearer ${FORGE_API_KEY}" \
+            --form "file=@${TARBALL}" \
+            https://forgeapi.puppet.com/v3/releases
+          echo ""
+          echo "Published to Puppet Forge successfully."
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
+          files: pkg/*.tar.gz
+          body: |
+            ## Install
+
+            ```bash
+            puppet module install onepam-onepam
+            ```
+
+            Or add to your `Puppetfile`:
+
+            ```ruby
+            mod 'onepam-onepam', '${{ github.ref_name }}'
+            ```
+
+            - [Puppet Forge](https://forge.puppet.com/modules/onepam/onepam)
+            - [Documentation](https://onepam.com/docs/install/puppet)

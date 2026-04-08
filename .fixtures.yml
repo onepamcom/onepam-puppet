@@ -1,0 +1,7 @@
+fixtures:
+  forge_modules:
+    stdlib:
+      repo: puppetlabs/stdlib
+      ref: 9.0.0
+  symlinks:
+    onepam: "#{source_dir}"
